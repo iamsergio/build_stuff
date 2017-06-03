@@ -28,6 +28,7 @@ _kits = {}
 _toolchains = {}
 _success = False
 _kit = os.getenv('BUILD_STUFF_KIT')
+_prefix = os.getenv('BUILD_STUFF_PREFIX')
 _repo = ""
 _branch = ""
 _variantName = ""
@@ -63,6 +64,9 @@ if _extra_config_opts is None:
 
 if _remove_config_opts is None:
     _remove_config_opts = ""
+
+if _prefix is None:
+    _prefix = _kit
 
 if not _root_dir:
     print "BUILD_STUFF_ROOT_DIR isn't set"
@@ -427,6 +431,7 @@ def replace_variables(config, text):
     text = text.replace("$branch", _branch)
     text = text.replace("$config", c.name)
     text = text.replace("$root", _root_dir)
+    text = text.replace("$prefix", _prefix)
     text = text.replace("$shellScriptSuffix", shell_script_suffix())
     return text
 
