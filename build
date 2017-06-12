@@ -56,7 +56,7 @@ _original_CXXFlags = "" # original CXX env variable
 
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
-VALID_OPTIONS = ['--debug', '--clean', '--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
+VALID_OPTIONS = ['--clean', '--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
 VALID_OSES = ['windows', 'linux', 'osx']
 
 if _extra_config_opts is None:
@@ -483,7 +483,6 @@ def parseCommandLine():
     _pull  = "--pull" in sys.argv
     _build_tests = "--tests" in sys.argv
     _clean = "--clean" in sys.argv
-    _debug = "--debug" in sys.argv
     _no_configure = "--no-configure" in sys.argv
     _configure_only = "--configure-only" in sys.argv
     _all = "--all" in sys.argv
