@@ -30,7 +30,7 @@ _success = False
 _kit = os.getenv('BUILD_STUFF_KIT')
 _prefix = os.getenv('BUILD_STUFF_PREFIX')
 _repo = ""
-_branch = ""
+_branch = os.getenv('BUILD_STUFF_BRANCH')
 _variantName = ""
 _pull = False
 _readWerrorFlags = True
@@ -147,7 +147,6 @@ class Repo:
 class Config:
     def __init__(self):
         self.name        = ""
-        self.toolchain   = ""
         self.disable_tests_argument = ""
         self.configures  = {} # indexed by host
         self.is_cross_compile = False
@@ -374,11 +373,7 @@ def loadJson():
                 sys.exit(-1)
         c = Config()
         c.name = config['name']
-        if "toolchain" in config:
-            c.toolchain = config['toolchain']
-            if c.toolchain not in _toolchains:
-                _post_messages.append("Unknown toolchain " + c.toolchain)
-                sys.exit(-1)
+
         if "disable_tests_argument" in config:
             c.disable_tests_argument = config['disable_tests_argument']
 
@@ -447,7 +442,7 @@ def install_prefix(config, repo):
     return prefix
 
 def parseCommandLine():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
@@ -456,7 +451,6 @@ def parseCommandLine():
     arguments = sys.argv[1:] # exclude file name
 
     _repo = sys.argv[1]
-    _branch = sys.argv[2]
 
     if not _repo:
         _post_messages.append("You must specify a valid repo name!\n")
@@ -472,10 +466,6 @@ def parseCommandLine():
         if _repo not in _repos and _repo not in _repo_groups:
             _post_messages.append("Invalid repo: " + _repo)
             printUsage();
-
-    if _branch.startswith("--"):
-        _post_messages.append("Branch argument must not start with --\n")
-        printUsage()
 
     _no_patches = "--no-patches" in sys.argv
     _clazy = "--clazy" in sys.argv
@@ -532,8 +522,6 @@ def parseCommandLine():
     if not _kit in configures():
         _post_messages.append("Invalid kit: " + _kit)
         sys.exit(-1)
-
-    arguments.remove(_branch)
 
     if arguments:
         _post_messages.append("Invalid extra arguments: " + string.join(arguments))
@@ -767,8 +755,12 @@ def setup_path(config, repo):
 def remove_opts_from_configure(command):
     splitted_rm = _remove_config_opts.split(" ")
     splitted = command.split(" ")
+
     for opt in splitted_rm:
-        splitted.remove(opt)
+        try:
+            splitted.remove(opt)
+        except:
+            print opt
 
     return string.join(splitted)
 
@@ -862,12 +854,6 @@ def configure(config, repo):
     return True
 
 def make_tool(config, repo):
-    c = _kits[config]
-    if c.toolchain:
-        toolchain = _toolchains[c.toolchain]
-        if toolchain.make:
-            return toolchain.make
-
     return _default_make
 
 def apply_CXX_flags(r):
@@ -947,14 +933,6 @@ if _pull:
 
 os.environ['VERBOSE'] = '1'
 os.environ['CONTAINER_STATS_DISABLED'] = '1'
-
-if _kit:
-    toolchain = _kits[_kit].toolchain
-
-    if toolchain:
-        env_file = _toolchains[toolchain].env_file
-        if env_file:
-            source(env_file)
 
 _tried_to_build = True
 for r in repos:
