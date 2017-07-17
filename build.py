@@ -36,7 +36,7 @@ _pull = False
 _readWerrorFlags = True
 _no_configure = False
 _no_notify = False
-_clean = False
+_clean = True
 _debug = os.getenv('BUILD_STUFF_IS_DEBUG') == "1"
 _static = False
 _post_messages = []
@@ -56,7 +56,7 @@ _original_CXXFlags = "" # original CXX env variable
 
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
-VALID_OPTIONS = ['--clean', '--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
+VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
 VALID_OSES = ['windows', 'linux', 'osx']
 
 if _extra_config_opts is None:
@@ -199,8 +199,8 @@ def fancy_group_string(g):
 
 def printUsage():
     print "Usage:"
-    print sys.argv[0] + " <config> <repo|group> <branch> [--pull|--debug|--clean|--no-configure|--no-notify|--tests|--variantName]"
-    print sys.argv[0] + " <repo|group> <branch> [--pull|--clean] # Executes these actions but doesn't build"
+    print sys.argv[0] + " <config> <repo|group> <branch> [--pull|--debug|--no-configure|--no-notify|--tests|--variantName]"
+    print sys.argv[0] + " <repo|group> <branch> [--pull] # Executes these actions but doesn't build"
 
     print "Available configs:"
     configs = configures()
@@ -472,7 +472,6 @@ def parseCommandLine():
     _distcc = "--distcc" in sys.argv
     _pull  = "--pull" in sys.argv
     _build_tests = "--tests" in sys.argv
-    _clean = "--clean" in sys.argv
     _no_configure = "--no-configure" in sys.argv
     _configure_only = "--configure-only" in sys.argv
     _all = "--all" in sys.argv
@@ -495,7 +494,7 @@ def parseCommandLine():
             sys.exit(-1)
 
     if _clean and _no_configure:
-        _post_messages.append("--clean is incompatible with --no-configure\nThe later allows you to run only make/make install, which won't work if you clean")
+        _post_messages.append("clean is incompatible with --no-configure\nThe later allows you to run only make/make install, which won't work if you clean")
         sys.exit(-1)
 
     if _configure_only and _no_configure:
