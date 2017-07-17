@@ -68,6 +68,10 @@ if _remove_config_opts is None:
 if _prefix is None:
     _prefix = _kit
 
+if _branch is None:
+    print "BUILD_STUFF_BRANCH isn't set"
+    sys.exit(-1)
+
 if _debug is None:
     _debug = False
 
