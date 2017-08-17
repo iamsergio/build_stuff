@@ -71,6 +71,18 @@ if _remove_config_opts is None:
 if _prefix is None:
     _prefix = _kit
 
+
+def open_editor(filename):
+    editor = os.getenv('BUILD_STUFF_EDITOR')
+    if not editor:
+        editor = 'kate'
+
+    os.system(editor + " " + filename)
+
+if '--config' in sys.argv or '--conf' in sys.argv:
+    open_editor(_build_stuff_file)
+    sys.exit(0)
+
 if _branch is None:
     print "BUILD_STUFF_BRANCH isn't set"
     sys.exit(-1)
@@ -164,13 +176,6 @@ class Toolchain:
         self.qt_spec  = ""
         self.env_file = ""
         self.make = ""
-
-def open_editor(filename):
-    editor = os.getenv('BUILD_STUFF_EDITOR')
-    if not editor:
-        editor = 'kate'
-
-    os.system(editor + " " + filename)
 
 def platform_name():
     plat = platform.system()
@@ -889,10 +894,6 @@ def build(config, repo):
 
 if "CXXFLAGS" in os.environ:
     _original_CXXFlags = os.environ['CXXFLAGS']
-
-if '--config' in sys.argv or '--conf' in sys.argv:
-    open_editor(_build_stuff_file)
-    sys.exit(0)
 
 loadJson()
 parseCommandLine()
