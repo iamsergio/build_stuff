@@ -59,6 +59,9 @@ VALID_REPO_TOOLS = ['git', 'bzr']
 VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
 VALID_OSES = ['windows', 'linux', 'osx']
 
+if os.getenv("BUILD_STUFF_MAKE_TOOL"):
+    _default_make = os.getenv("BUILD_STUFF_MAKE_TOOL")
+
 if _extra_config_opts is None:
     _extra_config_opts = ""
 
