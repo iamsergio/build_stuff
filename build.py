@@ -619,8 +619,8 @@ def run_command(command, silent = False, logfile = ""):
 
 def git_clean(repo):
     change_dir(src_dir(repo))
-
-    if repo.has_submodules and not run_command("git submodule foreach git clean -fdx", True):
+    r = _repos[repo]
+    if r.has_submodules and not run_command("git submodule foreach git clean -fdx", True):
         return False
     if not run_command("git clean -fdx", True, "git-clean-" + repo + ".log"):
         return False
