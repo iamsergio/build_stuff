@@ -162,6 +162,7 @@ class Repo:
         self.branch_remapping = {}
         self.hide_from_hosts = []
         self.hidden = False
+        self.has_submodules = False
 
 class Config:
     def __init__(self):
@@ -299,6 +300,9 @@ def load_json_repo(json_file_name):
 
         if "prefix" in repo:
             r.prefix = repo["prefix"]
+
+        if "has_submodules" in repo:
+            r.has_submodules = repo["has_submodules"]
 
         if "extra_args" in repo:
             r.extra_args = repo["extra_args"]
@@ -609,6 +613,9 @@ def run_command(command, silent = False, logfile = ""):
 
 def git_clean(repo):
     change_dir(src_dir(repo))
+
+    if repo.has_submodules and not run_command("git submodule foreach git clean -fdx", True):
+        return False
     if not run_command("git clean -fdx", True, "git-clean-" + repo + ".log"):
         return False
     if not run_command("git checkout ."):
