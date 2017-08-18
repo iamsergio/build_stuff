@@ -71,7 +71,6 @@ if _remove_config_opts is None:
 if _prefix is None:
     _prefix = _kit
 
-
 def open_editor(filename):
     editor = os.getenv('BUILD_STUFF_EDITOR')
     if not editor:
@@ -424,6 +423,13 @@ def shell_script_suffix():
         return ".bat"
     else:
         return ".source"
+
+def replace_env_variable(text, variable_name):
+    value = os.getenv(variable_name)
+    if value:
+        return text.replace("$" + variable_name, value)
+    return text
+
 
 def replace_variables(config, text):
     c = _kits[config]
@@ -809,6 +815,9 @@ def configure_command(config, repo):
         command = src_dir(repo) + "/" + command
 
     command = command.replace('$EXTRA_CONFIGURE_OPTS', _extra_config_opts)
+    command = replace_env_variable(command, "ANDROID_NDK")
+    command = replace_env_variable(command, "ANDROID_SDK")
+
 
     return command
 
