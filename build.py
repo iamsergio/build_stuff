@@ -132,7 +132,7 @@ def at_exit_handler():
 
     if not _no_notify and _tried_to_build:
         if _notify_tool:
-            run_command(_notify_tool, False)
+            run_command(_notify_tool + " \"" + msg + "\"", False)
         else:
             print "No notify tool set"
 
