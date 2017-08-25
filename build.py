@@ -33,6 +33,7 @@ _repo = ""
 _branch = os.getenv('BUILD_STUFF_BRANCH')
 _variantName = ""
 _pull = False
+_bear = False
 _readWerrorFlags = True
 _no_configure = False
 _no_notify = False
@@ -56,7 +57,7 @@ _original_CXXFlags = "" # original CXX env variable
 
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
-VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
+VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
 VALID_OSES = ['windows', 'linux', 'osx']
 
 if os.getenv("BUILD_STUFF_MAKE_TOOL"):
@@ -82,7 +83,7 @@ if '--config' in sys.argv or '--conf' in sys.argv:
     open_editor(_build_stuff_file)
     sys.exit(0)
 
-if _branch is None:
+if not _branch:
     print "BUILD_STUFF_BRANCH isn't set"
     sys.exit(-1)
 
@@ -154,7 +155,6 @@ class Repo:
         self.generator   = ""
         self.prefix      = ""
         self.masterRepo  = ""
-        self.env         = ""
         self.extra_args  = ""
         self.out_of_source = True
         self.build_tests = False
@@ -289,9 +289,6 @@ def load_json_repo(json_file_name):
 
         if 'build_tests' in repo:
             r.build_tests = repo['build_tests']
-
-        if "env" in repo:
-            r.env = repo["env"]
 
         if (r.generator == 'configure' or r.generator == 'cmake') and not r.install_dir:
             _post_messages.append("Missing install_dir for repo " + r.name)
@@ -468,7 +465,7 @@ def parseCommandLine():
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
-    global _repo, _kit, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only
+    global _repo, _kit, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only
 
     arguments = sys.argv[1:] # exclude file name
 
@@ -492,7 +489,8 @@ def parseCommandLine():
     _no_patches = "--no-patches" in sys.argv
     _clazy = "--clazy" in sys.argv
     _distcc = "--distcc" in sys.argv
-    _pull  = "--pull" in sys.argv
+    _pull = "--pull" in sys.argv
+    _bear = "--bear" in sys.argv
     _build_tests = "--tests" in sys.argv
     _no_configure = "--no-configure" in sys.argv
     _configure_only = "--configure-only" in sys.argv
@@ -840,9 +838,9 @@ def cmake_command(config, repo):
     prefix = complete_install_prefix(config, masterRepo)
     command += " -DCMAKE_INSTALL_PREFIX=" + prefix
 
-    if make_tool(config, repo) == "jom":
+    if make_tool(config, repo, False) == "jom":
         command += ' -G "NMake Makefiles JOM"'
-    if make_tool(config, repo) == "nmake":
+    if make_tool(config, repo, False) == "nmake":
         command += ' -G "NMake Makefiles"'
 
     command += " -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
@@ -880,7 +878,9 @@ def configure(config, repo):
 
     return True
 
-def make_tool(config, repo):
+def make_tool(config, repo, useBear):
+    if useBear:
+        return "bear " + _default_make
     return _default_make
 
 def apply_CXX_flags(r):
@@ -893,10 +893,12 @@ def build(config, repo):
     global _docs
     change_dir(build_dir(repo))
     r = _repos[repo]
-    make = make_tool(config, repo)
+    make = make_tool(config, repo, _bear)
 
     if not run_command(make, True, "make-" + repo + ".log"):
         sys.exit(-1)
+
+    make = make_tool(config, repo, False)
     if not run_command(make + " install", True, "install-" + repo + ".log"):
         sys.exit(-1)
 
@@ -966,9 +968,6 @@ for r in repos:
 
     setup_path(_kit, r)
     repo = _repos[r]
-
-    if repo.env:
-        source(replace_variables(_kit, repo.env))
 
     apply_CXX_flags(repo)
     if False and not _no_patches:
