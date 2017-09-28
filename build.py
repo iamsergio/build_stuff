@@ -379,7 +379,7 @@ def loadJson():
         _toolchains[t.name] = t
 
     for config in decoded['configs']:
-        for mandatory_property in ['name', 'configure']:
+        for mandatory_property in ['name']:
             if mandatory_property not in config:
                 _post_messages.append("Missing " + mandatory_property + " property in json file")
                 sys.exit(-1)
@@ -392,8 +392,9 @@ def loadJson():
         if "is_cross_compile" in config:
             c.is_cross_compile = config['is_cross_compile']
 
-        for conf in config['configure']:
-            c.configures[conf["host"]] = conf["command"]
+        if 'configure' in config: # TODO remove legacy
+            for conf in config['configure']:
+                c.configures[conf["host"]] = conf["command"]
 
         _kits[c.name] = c
 
@@ -538,9 +539,6 @@ def parseCommandLine():
             arguments.remove(option)
 
     arguments.remove(_repo)
-    if not _kit in configures():
-        _post_messages.append("Invalid kit: " + _kit)
-        sys.exit(-1)
 
     if arguments:
         _post_messages.append("Invalid extra arguments: " + string.join(arguments))
@@ -653,6 +651,10 @@ def apply_patches(repo):
     return True
 
 def real_branch(repo, fakeBranch):
+    env_name = "BUILD_STUFF_" + repo + "_BRANCH"
+    if env_name in os.environ:
+        return os.environ[env_name]
+
     r = _repos[repo]
     if fakeBranch in r.branch_remapping:
         return r.branch_remapping[fakeBranch]
@@ -786,11 +788,26 @@ def remove_opts_from_configure(command):
 
     return string.join(splitted)
 
+def qmake_env_args_for_repo(repo):
+    prop_name = "BUILD_STUFF_" + repo + "_QMAKE_ARGS"
+    if prop_name in os.environ:
+        return os.environ[prop_name]
+    return ""
+
+def configure_env_command_for_repo(repo):
+    prop_name = "BUILD_STUFF_" + repo + "_CONFIGURE"
+    if prop_name in os.environ:
+        return os.environ[prop_name]
+    return ""
+
 def configure_command(config, repo):
     c = _kits[config]
     r = _repos[repo]
-    command = c.configures[platform_name()]
-    command = remove_opts_from_configure(command)
+    command = configure_env_command_for_repo(repo)
+
+    if not command: # TODO: REmove this legacy stuff
+        command = c.configures[platform_name()]
+        command = remove_opts_from_configure(command)
 
     if _debug:
         command += " -debug "
@@ -863,7 +880,7 @@ def configure(config, repo):
     change_dir(bld_dir)
 
     if r.generator == 'qmake':
-        qmake_cmd = 'qmake ' + src_dir(repo) + " " + r.extra_args
+        qmake_cmd = 'qmake ' + src_dir(repo) + " " + r.extra_args + qmake_env_args_for_repo(repo)
         if not run_command(qmake_cmd):
             sys.exit(-1)
     elif r.generator == 'configure':
