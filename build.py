@@ -157,7 +157,6 @@ class Repo:
         self.extra_args  = ""
         self.out_of_source = True
         self.build_tests = False
-        self.branch_remapping = {}
         self.hide_from_hosts = []
         self.hidden = False
         self.has_submodules = False
@@ -310,9 +309,6 @@ def load_json_repo(json_file_name):
         if r.generator == "configure" and not r.prefix:
             _post_messages.append("Missing prefix for repo: " + r.name)
             sys.exit(-1)
-
-        if "branch_remapping" in repo:
-            r.branch_remapping = repo["branch_remapping"]
 
         if "hide_from_hosts" in repo:
             r.hide_from_hosts = repo["hide_from_hosts"]
@@ -632,8 +628,6 @@ def real_branch(repo, fakeBranch):
         return os.environ[env_name]
 
     r = _repos[repo]
-    if fakeBranch in r.branch_remapping:
-        return r.branch_remapping[fakeBranch]
     return fakeBranch
 
 def git_checkout(repo):
