@@ -83,8 +83,7 @@ if '--config' in sys.argv or '--conf' in sys.argv:
     sys.exit(0)
 
 if not _branch:
-    print "BUILD_STUFF_BRANCH isn't set"
-    sys.exit(-1)
+    _branch = "master"
 
 if _debug is None:
     _debug = False
