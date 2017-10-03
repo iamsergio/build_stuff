@@ -25,7 +25,6 @@ _configure_only = False
 _clean_only = False
 _repo_groups = {}
 _kits = {}
-_toolchains = {}
 _success = False
 _kit = os.getenv('BUILD_STUFF_KIT')
 _prefix = os.getenv('BUILD_STUFF_PREFIX')
@@ -169,13 +168,6 @@ class Config:
         self.disable_tests_argument = ""
         self.configures  = {} # indexed by host
         self.is_cross_compile = False
-
-class Toolchain:
-    def __init__(self):
-        self.name     = ""
-        self.qt_spec  = ""
-        self.env_file = ""
-        self.make = ""
 
 def platform_name():
     plat = platform.system()
@@ -345,7 +337,7 @@ def loadJson():
     global _build_stuff_build_dir
 
     decoded = json.loads(contents)
-    for mandatory_property in ['configs', 'toolchains', 'default_make']:
+    for mandatory_property in ['configs', 'default_make']:
         if mandatory_property not in decoded:
             _post_messages.append("Missing " + mandatory_property + " property in json file")
             sys.exit(-1)
@@ -361,22 +353,6 @@ def loadJson():
             _notify_tool = decoded["notify_tool"][platform_name()]
 
     load_json_repos()
-
-    for toolchain in decoded['toolchains']:
-        for mandatory_property in ['name']:
-            if mandatory_property not in toolchain:
-                _post_messages.append("Missing " + mandatory_property + " property in json file")
-                sys.exit(-1)
-        t = Toolchain()
-        t.name = toolchain["name"]
-        if "qt_spec" in toolchain:
-            t.qt_spec = toolchain["qt_spec"]
-        if "env" in toolchain:
-            t.env_file = toolchain["env"]
-        if "make" in toolchain:
-            t.make = toolchain["make"]
-
-        _toolchains[t.name] = t
 
     for config in decoded['configs']:
         for mandatory_property in ['name']:
