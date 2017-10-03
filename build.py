@@ -721,7 +721,17 @@ def path_char():
         return ";"
     return ":"
 
+def prefix_from_env(repo):
+    prop_name = "BUILD_STUFF_" + repo + "_PREFIX"
+    if prop_name in os.environ:
+        return os.environ[prop_name]
+    return ""
+
 def complete_install_prefix(config, repo):
+    from_env = prefix_from_env(repo)
+    if from_env:
+        return from_env
+
     r = _repos[repo]
     return _install_prefix + normalize(r.install_dir) + install_prefix(config, repo)
 
