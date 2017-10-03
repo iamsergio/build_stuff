@@ -45,7 +45,6 @@ _docs = False
 _nuke = False
 _all = False
 _nuked_paths = []
-_completed_master_repos_setup = []
 _timesForRepo = {}
 _culprit = ""
 _no_patches = False
@@ -747,13 +746,6 @@ def nuke_install(config, repo):
         else:
             print "Not implemented for windows yet"
             assert(False)
-
-def setup_path(config, repo):
-    r = _repos[repo]
-    if r.masterRepo and r.masterRepo not in _completed_master_repos_setup:
-        pathToAdd = complete_install_prefix(config, r.masterRepo) + slash() + "bin" + path_char()
-        os.environ["PATH"] = pathToAdd + os.environ["PATH"]
-        _completed_master_repos_setup.append(r.masterRepo)
 
 def remove_opts_from_configure(command):
     splitted_rm = _remove_config_opts.split(" ")
