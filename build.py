@@ -151,7 +151,6 @@ class Repo:
         self.werror_flags = ""
         self.generator   = ""
         self.prefix      = ""
-        self.masterRepo  = ""
         self.extra_args  = ""
         self.out_of_source = True
         self.build_tests = False
@@ -294,15 +293,6 @@ def load_json_repo(json_file_name):
 
         if "werror_flags" in repo:
             r.werror_flags = repo["werror_flags"]
-
-        if "masterRepo" in repo:
-            if r.prefix:
-                _post_messages.append("repo " + r.name + " can't have both prefix and masterRepo")
-                sys.exit(-1)
-            r.masterRepo = repo["masterRepo"]
-            if not _repos[r.masterRepo].prefix:
-                _post_messages.append("master repo " + r.masterRepo + " doesn't have prefix")
-                sys.exit(-1)
 
         if r.generator == "configure" and not r.prefix:
             _post_messages.append("Missing prefix for repo: " + r.name)
@@ -788,11 +778,7 @@ def configure_command(config, repo):
     if _static:
         command += " -static"
 
-    masterRepo = repo
-    if r.masterRepo:
-        masterRepo = r.masterRepo
-
-    prefix = complete_install_prefix(config, masterRepo)
+    prefix = complete_install_prefix(config, repo)
     command += " -prefix " + prefix
     if c.is_cross_compile:
         command += " -extprefix " + prefix
@@ -832,11 +818,7 @@ def cmake_command(config, repo):
     else:
         command += "-DCMAKE_BUILD_TYPE=RELWITHDEBINFO"
 
-    masterRepo = repo
-    if r.masterRepo:
-        masterRepo = r.masterRepo
-
-    prefix = complete_install_prefix(config, masterRepo)
+    prefix = complete_install_prefix(config, repo)
     command += " -DCMAKE_INSTALL_PREFIX=" + prefix
 
     if make_tool(config, repo, False) == "jom":
@@ -966,7 +948,6 @@ for r in repos:
     if _nuke:
         nuke_install(_kit, r)
 
-    setup_path(_kit, r)
     repo = _repos[r]
 
     apply_CXX_flags(repo)
