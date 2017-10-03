@@ -829,7 +829,8 @@ def configure_command(config, repo):
     if r.out_of_source:
         command = src_dir(repo) + "/" + command
 
-    command = command.replace('$EXTRA_CONFIGURE_OPTS', _extra_config_opts)
+    command += " " + _extra_config_opts
+
     command = replace_env_variable(command, "ANDROID_NDK")
     command = replace_env_variable(command, "ANDROID_SDK")
 
