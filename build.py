@@ -806,10 +806,22 @@ def configure_command(config, repo):
 
     return command
 
+def cmake_env_command_for_repo(repo):
+    prop_name = "BUILD_STUFF_" + repo + "_CMAKE"
+    if prop_name in os.environ:
+        return os.environ[prop_name]
+    return ""
+
 def cmake_command(config, repo):
     c = _kits[config]
     r = _repos[repo]
-    command = "cmake . "
+
+    command = cmake_env_command_for_repo(repo)
+    if not command:
+        command = "cmake ."
+
+    command += " "
+
     if r.out_of_source:
         command = "cmake " + src_dir(repo) + " "
 
@@ -836,7 +848,6 @@ def cmake_command(config, repo):
     if c.disable_tests_argument and not (r.build_tests or _build_tests):
         command += " " + c.disable_tests_argument
 
-    # print "Running cmake. CXX=" + os.environ['CXX']
     return command
 
 def configure(config, repo):
