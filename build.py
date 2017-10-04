@@ -294,10 +294,6 @@ def load_json_repo(json_file_name):
         if "werror_flags" in repo:
             r.werror_flags = repo["werror_flags"]
 
-        if r.generator == "configure" and not r.prefix:
-            _post_messages.append("Missing prefix for repo: " + r.name)
-            sys.exit(-1)
-
         if "hide_from_hosts" in repo:
             r.hide_from_hosts = repo["hide_from_hosts"]
 
@@ -409,11 +405,14 @@ def replace_variables(config, text):
     text = text.replace("$branch", _branch)
     text = text.replace("$config", c.name)
     text = text.replace("$root", _root_dir)
-    text = text.replace("$prefix", _prefix)
     text = text.replace("$shellScriptSuffix", shell_script_suffix())
     return text
 
 def install_prefix(config, repo):
+
+    if _prefix:
+        return _prefix
+
     c = _kits[config]
     r = _repos[repo]
     prefix = r.prefix
