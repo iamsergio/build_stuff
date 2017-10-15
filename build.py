@@ -803,14 +803,12 @@ def cmake_command(config, repo):
     c = _kits[config]
     r = _repos[repo]
 
-    command = cmake_env_command_for_repo(repo)
-    if not command:
+    if r.out_of_source:
+        command = "cmake " + src_dir(repo)
+    else:
         command = "cmake ."
 
-    command += " "
-
-    if r.out_of_source:
-        command = "cmake " + src_dir(repo) + " "
+    command += " " + cmake_env_command_for_repo(repo) + " "
 
     if _debug:
         command += "-DCMAKE_BUILD_TYPE=Debug"
