@@ -14,7 +14,7 @@ _build_stuff_file = _build_stuff_dir + "/build_stuff.json"
 _build_stuff_build_dir = os.getenv('BUILD_STUFF_BUILD_DIR') + "/"
 _extra_config_opts = os.getenv('EXTRA_CONFIGURE_OPTS')
 _remove_config_opts=os.getenv("BUILD_STUFF_REMOVE_CONFIG")
-_default_make = "make -j12"
+_default_make = os.getenv("BUILD_STUFF_MAKE_TOOL")
 _tried_to_build=False
 _src_prefix = os.getenv('BUILD_STUFF_SRC_DIR') + "/"
 _install_prefix = os.getenv('BUILD_STUFF_INSTALL_DIR') + "/"
@@ -321,8 +321,6 @@ def loadJson():
         if mandatory_property not in decoded:
             _post_messages.append("Missing " + mandatory_property + " property in json file")
             sys.exit(-1)
-
-    _default_make = decoded['default_make']
 
     if not _install_prefix:
         _post_messages.append("Invalid install_dir")
