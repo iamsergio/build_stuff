@@ -549,6 +549,10 @@ def src_dir(repo):
     return directory
 
 def run_command(command, silent = False, logfile = ""):
+    if not command:
+        print "run_command: Empty command!"
+        return False
+
     out = ""
     print "[" + os.getcwd() + "] $] " + command
     if _print_only:
