@@ -762,10 +762,7 @@ def configure_command(config, repo):
     c = _kits[config]
     r = _repos[repo]
     command = configure_env_command_for_repo(repo)
-
-    if not command: # TODO: REmove this legacy stuff
-        command = c.configures[platform_name()]
-        command = remove_opts_from_configure(command)
+    command = remove_opts_from_configure(command)
 
     if _debug:
         command += " -debug "
@@ -797,6 +794,12 @@ def cmake_env_command_for_repo(repo):
         return os.environ[prop_name]
     return ""
 
+def cmake_env_command():
+    prop_name = "BUILD_STUFF_CMAKE"
+    if prop_name in os.environ:
+        return os.environ[prop_name]
+    return ""
+
 def cmake_command(config, repo):
     c = _kits[config]
     r = _repos[repo]
@@ -806,7 +809,7 @@ def cmake_command(config, repo):
     else:
         command = "cmake ."
 
-    command += " " + cmake_env_command_for_repo(repo) + " "
+    command += " " + cmake_env_command_for_repo(repo) + " " + cmake_env_command() + " "
 
     if _debug:
         command += "-DCMAKE_BUILD_TYPE=Debug"
