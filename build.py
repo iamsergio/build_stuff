@@ -317,7 +317,7 @@ def loadJson():
     global _build_stuff_build_dir
 
     decoded = json.loads(contents)
-    for mandatory_property in ['configs', 'default_make']:
+    for mandatory_property in ['configs']:
         if mandatory_property not in decoded:
             _post_messages.append("Missing " + mandatory_property + " property in json file")
             sys.exit(-1)
