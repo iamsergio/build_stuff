@@ -16,9 +16,9 @@ _extra_config_opts = os.getenv('EXTRA_CONFIGURE_OPTS')
 _remove_config_opts=os.getenv("BUILD_STUFF_REMOVE_CONFIG")
 _default_make = os.getenv("BUILD_STUFF_MAKE_TOOL")
 _tried_to_build=False
-_src_prefix = os.getenv('BUILD_STUFF_SRC_DIR') + "/"
-_install_prefix = os.getenv('BUILD_STUFF_INSTALL_DIR') + "/"
-_root_dir = os.getenv('BUILD_STUFF_ROOT_DIR') + "/"
+_src_prefix = os.getenv('SOURCE_DIR') + "/"
+_install_prefix = os.getenv('INSTALLATION_DIR') + "/"
+_root_dir = os.getenv('DATA_DIR') + "/"
 _repos = {}
 _patches = {}
 _configure_only = False
@@ -88,7 +88,7 @@ if _debug is None:
     _debug = False
 
 if not _root_dir:
-    print "BUILD_STUFF_ROOT_DIR isn't set"
+    print "DATA_DIR isn't set"
     sys.exit(-1)
 
 if not _build_stuff_build_dir:
@@ -100,11 +100,11 @@ if not _build_stuff_dir:
     sys.exit(-1)
 
 if not _install_prefix:
-    print "BUILD_STUFF_INSTALL_DIR isn't set"
+    print "INSTALLATION_DIR isn't set"
     sys.exit(-1)
 
 if not _src_prefix:
-    print "BUILD_STUFF_SRC_DIR isn't set"
+    print "SOURCE_DIR isn't set"
     sys.exit(-1)
 
 if not _kit:
