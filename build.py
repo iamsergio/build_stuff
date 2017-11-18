@@ -894,6 +894,22 @@ def build(config, repo):
 
     return True
 
+def parse_qt_extra_args_helper():
+    proc = subprocess.Popen("qt_extra_configure_args.py", stdout = subprocess.PIPE)
+
+    global _extra_config_opts, _remove_config_opts
+    i = 0
+    for line in proc.stdout:
+        line = line.strip()
+        if i == 0 and line:
+            _extra_config_opts = _extra_config_opts + " " + line
+
+        if i == 1 and line:
+            _remove_config_opts = _remove_config_opts + " " + line
+            break
+
+        i = i + 1
+
 if "CXXFLAGS" in os.environ:
     _original_CXXFlags = os.environ['CXXFLAGS']
 
@@ -942,6 +958,9 @@ if _pull:
 
 os.environ['VERBOSE'] = '1'
 os.environ['CONTAINER_STATS_DISABLED'] = '1'
+
+
+parse_qt_extra_args_helper()
 
 _tried_to_build = True
 for r in repos:
