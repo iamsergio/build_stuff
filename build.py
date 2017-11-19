@@ -959,8 +959,9 @@ if _pull:
 os.environ['VERBOSE'] = '1'
 os.environ['CONTAINER_STATS_DISABLED'] = '1'
 
-
-parse_qt_extra_args_helper()
+# not working on Windows for some reason
+if platform.system() != "Windows":
+    parse_qt_extra_args_helper()
 
 _tried_to_build = True
 for r in repos:
