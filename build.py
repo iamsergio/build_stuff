@@ -14,7 +14,7 @@ _build_stuff_file = _build_stuff_dir + "/build_stuff.json"
 _build_stuff_build_dir = os.getenv('BUILD_STUFF_BUILD_DIR') + "/"
 _extra_config_opts = os.getenv('EXTRA_CONFIGURE_OPTS')
 _remove_config_opts=os.getenv("BUILD_STUFF_REMOVE_CONFIG")
-_default_make = os.getenv("BUILD_STUFF_MAKE_TOOL")
+_default_make = os.getenv("BUILD_STUFF_MAKE_TOOL", 'make')
 _tried_to_build=False
 _src_prefix = os.getenv('SOURCE_DIR') + "/"
 _install_prefix = os.getenv('INSTALLATION_DIR') + "/"
@@ -53,13 +53,15 @@ _build_tests = False
 _distcc = False
 _original_CXXFlags = "" # original CXX env variable
 
+if _default_make == 'make':
+    _make_opts = os.getenv('MAKEFLAGS', '')
+    if _make_opts:
+        _default_make = _default_make + " " + _make_opts
+
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
 VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
 VALID_OSES = ['windows', 'linux', 'osx']
-
-if os.getenv("BUILD_STUFF_MAKE_TOOL"):
-    _default_make = os.getenv("BUILD_STUFF_MAKE_TOOL")
 
 if _extra_config_opts is None:
     _extra_config_opts = ""
