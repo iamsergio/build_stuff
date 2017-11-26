@@ -765,7 +765,7 @@ def configure_env_command_for_repo(repo):
     return ""
 
 def configure_command(config, repo):
-    c = _kits[config]
+    # c = _kits[config]
     r = _repos[repo]
     command = configure_env_command_for_repo(repo)
     command = remove_opts_from_configure(command)
@@ -780,8 +780,8 @@ def configure_command(config, repo):
 
     prefix = complete_install_prefix(config, repo)
     command += " -prefix " + prefix
-    if c.is_cross_compile:
-        command += " -extprefix " + prefix
+    #if c.is_cross_compile:
+    #    command += " -extprefix " + prefix
 
     if r.out_of_source:
         command = src_dir(repo) + "/" + command
