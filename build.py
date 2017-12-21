@@ -26,7 +26,6 @@ _clean_only = False
 _repo_groups = {}
 _kits = {}
 _success = False
-_kit = os.getenv('BUILD_STUFF_KIT')
 _prefix = os.getenv('BUILD_STUFF_PREFIX')
 _repo = ""
 _branch = os.getenv('BUILD_STUFF_BRANCH')
@@ -69,9 +68,6 @@ if _extra_config_opts is None:
 if _remove_config_opts is None:
     _remove_config_opts = ""
 
-if _prefix is None:
-    _prefix = _kit
-
 def open_editor(filename):
     editor = os.getenv('BUILD_STUFF_EDITOR')
     if not editor:
@@ -108,11 +104,6 @@ if not _install_prefix:
 if not _src_prefix:
     print "SOURCE_DIR isn't set"
     sys.exit(-1)
-
-if not _kit:
-    print "BUILD_STUFF_KIT isn't set"
-    sys.exit(-1)
-
 
 def at_exit_handler():
     global _timesForRepo, _no_notify, _notify_tool, _tried_to_build, _culprit
@@ -385,8 +376,7 @@ def replace_env_variable(text, variable_name):
     return text
 
 
-def replace_variables(config, text):
-    c = _kits[config]
+def replace_variables(text):
     if _debug:
         text = text.replace("$isDebug", "d")
     else:
@@ -403,20 +393,18 @@ def replace_variables(config, text):
         text = text.replace("$variant", "")
 
     text = text.replace("$branch", _branch)
-    text = text.replace("$config", c.name)
     text = text.replace("$root", _root_dir)
     text = text.replace("$shellScriptSuffix", shell_script_suffix())
     return text
 
-def install_prefix(config, repo):
+def install_prefix(repo):
 
     if _prefix:
         return _prefix
 
-    c = _kits[config]
     r = _repos[repo]
     prefix = r.prefix
-    prefix = replace_variables(config, prefix)
+    prefix = replace_variables(prefix)
 
     return prefix
 
@@ -425,7 +413,7 @@ def parseCommandLine():
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
-    global _repo, _kit, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only
+    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only
 
     arguments = sys.argv[1:] # exclude file name
 
@@ -719,17 +707,17 @@ def prefix_from_env(repo):
         return os.environ[prop_name]
     return ""
 
-def complete_install_prefix(config, repo):
+def complete_install_prefix(repo):
     from_env = prefix_from_env(repo)
     if from_env:
         return from_env
 
     r = _repos[repo]
-    return _install_prefix + normalize(r.install_dir) + install_prefix(config, repo)
+    return _install_prefix + normalize(r.install_dir) + install_prefix(repo)
 
-def nuke_install(config, repo):
+def nuke_install(repo):
     global _nuked_paths
-    path = complete_install_prefix(config, repo)
+    path = complete_install_prefix(repo)
     if path not in _nuked_paths:
         _nuked_paths.append(path)
         if platform_name() == "linux" or platform_name() == "osx":
@@ -764,8 +752,7 @@ def configure_env_command_for_repo(repo):
         return os.environ[prop_name]
     return ""
 
-def configure_command(config, repo):
-    # c = _kits[config]
+def configure_command(repo):
     r = _repos[repo]
     command = configure_env_command_for_repo(repo)
     command = remove_opts_from_configure(command)
@@ -778,7 +765,7 @@ def configure_command(config, repo):
     if _static:
         command += " -static"
 
-    prefix = complete_install_prefix(config, repo)
+    prefix = complete_install_prefix(repo)
     command += " -prefix " + prefix
     #if c.is_cross_compile:
     #    command += " -extprefix " + prefix
@@ -806,8 +793,7 @@ def cmake_env_command():
         return os.environ[prop_name]
     return ""
 
-def cmake_command(config, repo):
-    c = _kits[config]
+def cmake_command(repo):
     r = _repos[repo]
 
     if r.out_of_source:
@@ -822,23 +808,23 @@ def cmake_command(config, repo):
     else:
         command += "-DCMAKE_BUILD_TYPE=RELWITHDEBINFO"
 
-    prefix = complete_install_prefix(config, repo)
+    prefix = complete_install_prefix(repo)
     command += " -DCMAKE_INSTALL_PREFIX=" + prefix
 
-    if make_tool(config, repo, False) == "jom":
+    if make_tool(repo, False) == "jom":
         command += ' -G "NMake Makefiles JOM"'
-    if make_tool(config, repo, False) == "nmake":
+    if make_tool(repo, False) == "nmake":
         command += ' -G "NMake Makefiles"'
 
     command += " -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
     command += " " + r.extra_args
 
-    if c.disable_tests_argument and not (r.build_tests or _build_tests):
-        command += " " + c.disable_tests_argument
+    #if c.disable_tests_argument and not (r.build_tests or _build_tests): # TODO use an env variable instead
+    #    command += " " + c.disable_tests_argument
 
     return command
 
-def configure(config, repo):
+def configure(repo):
     r = _repos[repo]
 
     bld_dir = build_dir(repo)
@@ -853,10 +839,10 @@ def configure(config, repo):
         if not run_command(qmake_cmd):
             sys.exit(-1)
     elif r.generator == 'configure':
-        if not run_command(configure_command(config, repo), True, "configure-" + repo + ".log"):
+        if not run_command(configure_command(repo), True, "configure-" + repo + ".log"):
             sys.exit(-1)
     elif r.generator == 'cmake':
-        if not run_command(cmake_command(config, repo), True, "cmake-" + repo + ".log"):
+        if not run_command(cmake_command(repo), True, "cmake-" + repo + ".log"):
             sys.exit(-1)
     else:
         _post_messages.append("Unimplemented generator: " + r.generator)
@@ -864,7 +850,7 @@ def configure(config, repo):
 
     return True
 
-def make_tool(config, repo, useBear):
+def make_tool(repo, useBear):
     if useBear:
         return "bear " + _default_make
     return _default_make
@@ -875,16 +861,16 @@ def apply_CXX_flags(r):
     if _readWerrorFlags and r.werror_flags and _branch == 'master': # Hack, master only, since I didn't fix the warnings in other branches
         os.environ['CXXFLAGS'] = _original_CXXFlags + " " + r.werror_flags
 
-def build(config, repo):
+def build(repo):
     global _docs
     change_dir(build_dir(repo))
     r = _repos[repo]
-    make = make_tool(config, repo, _bear)
+    make = make_tool(repo, _bear)
 
     if not run_command(make, True, "make-" + repo + ".log"):
         sys.exit(-1)
 
-    make = make_tool(config, repo, False)
+    make = make_tool(repo, False)
     if not run_command(make + " install", True, "install-" + repo + ".log"):
         sys.exit(-1)
 
@@ -970,18 +956,18 @@ for r in repos:
     startTime = time.time()
 
     if _nuke:
-        nuke_install(_kit, r)
+        nuke_install(r)
 
     repo = _repos[r]
 
     apply_CXX_flags(repo)
     if False and not _no_patches:
         apply_patches(r)
-    if not _no_configure and not configure(_kit, r):
+    if not _no_configure and not configure(r):
         sys.exit(-1)
 
     if not _configure_only:
-        if not build(_kit, r):
+        if not build(r):
             _culprit = r
             sys.exit(-1)
     elapsedTime = time.time() - startTime
