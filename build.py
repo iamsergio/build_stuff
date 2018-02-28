@@ -32,6 +32,7 @@ _branch = os.getenv('BUILD_STUFF_BRANCH')
 _variantName = ""
 _pull = False
 _bear = False
+_no_checkout = False
 _readWerrorFlags = True
 _no_configure = False
 _no_notify = False
@@ -59,7 +60,7 @@ if _default_make == 'make':
 
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
-VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config']
+VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config', '--no-checkout']
 VALID_OSES = ['windows', 'linux', 'osx']
 
 if _extra_config_opts is None:
@@ -413,7 +414,7 @@ def parseCommandLine():
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
-    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only
+    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only, _no_checkout
 
     arguments = sys.argv[1:] # exclude file name
 
@@ -439,6 +440,7 @@ def parseCommandLine():
     _distcc = "--distcc" in sys.argv
     _pull = "--pull" in sys.argv
     _bear = "--bear" in sys.argv
+    _no_checkout = "--no-checkout" in sys.argv
     _build_tests = "--tests" in sys.argv
     _no_configure = "--no-configure" in sys.argv
     _configure_only = "--configure-only" in sys.argv
@@ -936,8 +938,9 @@ for r in repos:
         if uses_git and _branch != 'master' and not git_fetch(r): # // Fetch before checkout, in case there are new branches in the remote
             sys.exit(-1)
 
-    if not checkout(r):
-        sys.exit(-1)
+    if not _no_checkout:
+        if not checkout(r):
+            sys.exit(-1)
 
 if _pull:
     for r in repos:
