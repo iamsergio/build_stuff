@@ -863,6 +863,10 @@ def apply_CXX_flags(r):
     if _readWerrorFlags and r.werror_flags and _branch == 'master': # Hack, master only, since I didn't fix the warnings in other branches
         os.environ['CXXFLAGS'] = _original_CXXFlags + " " + r.werror_flags
 
+def make_install_command(repo):
+    make = make_tool(repo, False)
+    return make + " install"
+
 def build(repo):
     global _docs
     change_dir(build_dir(repo))
@@ -872,8 +876,8 @@ def build(repo):
     if not run_command(make, True, "make-" + repo + ".log"):
         sys.exit(-1)
 
-    make = make_tool(repo, False)
-    if not run_command(make + " install", True, "install-" + repo + ".log"):
+    makeinstall = make_install_command(repo)
+    if not run_command(makeinstall, True, "install-" + repo + ".log"):
         sys.exit(-1)
 
     if _docs:
