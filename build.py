@@ -15,6 +15,7 @@ _build_stuff_build_dir = os.getenv('BUILD_STUFF_BUILD_DIR') + "/"
 _extra_config_opts = os.getenv('EXTRA_CONFIGURE_OPTS')
 _remove_config_opts=os.getenv("BUILD_STUFF_REMOVE_CONFIG")
 _default_make = os.getenv("BUILD_STUFF_MAKE_TOOL", 'make')
+_fast_install_tool = os.getenv('BUILD_STUFF_FAST_INSTALL_TOOL', False)
 _tried_to_build=False
 _src_prefix = os.getenv('SOURCE_DIR') + "/"
 _install_prefix = os.getenv('INSTALLATION_DIR') + "/"
@@ -52,6 +53,7 @@ _clazy = False
 _build_tests = False
 _distcc = False
 _original_CXXFlags = "" # original CXX env variable
+_fast_install = False
 
 if _default_make == 'make':
     _make_opts = os.getenv('MAKEFLAGS', '')
@@ -60,7 +62,7 @@ if _default_make == 'make':
 
 VALID_GENERATORS = ['configure', 'qmake', 'cmake']
 VALID_REPO_TOOLS = ['git', 'bzr']
-VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config', '--no-checkout']
+VALID_OPTIONS = ['--pull', '--variant-name', '--no-configure', '--no-notify', '--bear', '--docs', '--configure-only', '--clean-only', '--nuke', '--static', '--tests', '--no-werror', '--clazy', '--no-patches', '--all', '--print', '--conf', '-config', '--no-checkout', '--fast-install']
 VALID_OSES = ['windows', 'linux', 'osx']
 
 if _extra_config_opts is None:
@@ -193,7 +195,7 @@ def fancy_group_string(g):
 
 def printUsage():
     print "Usage:"
-    print sys.argv[0] + " <config> <repo|group> <branch> [--pull|--debug|--no-configure|--no-notify|--tests|--variantName]"
+    print sys.argv[0] + " <config> <repo|group> <branch> [--pull|--debug|--no-configure|--no-notify|--fast-install|--print|--tests|--variantName]"
     print sys.argv[0] + " <repo|group> <branch> [--pull] # Executes these actions but doesn't build"
 
     print "Available configs:"
@@ -414,7 +416,7 @@ def parseCommandLine():
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
-    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only, _no_checkout
+    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only, _no_checkout, _fast_install
 
     arguments = sys.argv[1:] # exclude file name
 
@@ -447,6 +449,7 @@ def parseCommandLine():
     _all = "--all" in sys.argv
     _clean_only = "--clean-only" in sys.argv
     _no_notify = "--no-notify" in sys.argv
+    _fast_install = "--fast-install" in sys.argv
     _docs = "--docs" in sys.argv
     _nuke = "--nuke" in sys.argv
     _static = "--static" in sys.argv
@@ -864,6 +867,9 @@ def apply_CXX_flags(r):
         os.environ['CXXFLAGS'] = _original_CXXFlags + " " + r.werror_flags
 
 def make_install_command(repo):
+    if _fast_install and _fast_install_tool:
+        return _fast_install_tool
+
     make = make_tool(repo, False)
     return make + " install"
 
