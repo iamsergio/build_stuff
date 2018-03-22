@@ -69,18 +69,27 @@ module_name = rel_path[0]
 # now we install stuff
 src_base_path = _source_dir + os.sep + module_name + os.sep
 
-stuff_to_install = ['bin', '/plugins/platforms', '/plugins/generic', '/plugins/imageformats', '/plugins/printsupport', '/plugins/sqldrivers']
+stuff_to_install = ['bin', '/plugins/platforms', '/plugins/generic', '/plugins/imageformats', '/plugins/printsupport', '/plugins/sqldrivers', '/lib']
 
-for stuff in stuff_to_install:
-    src_path = os.path.abspath(src_base_path + stuff)
-    dst_path = os.path.abspath(_install_dir + os.sep + stuff) # sprinkle abspath to normalize slashes on windows
+for src_stuff in stuff_to_install:
+    src_path = os.path.abspath(src_base_path + src_stuff)
+
+    dst_stuff = src_stuff
+    if dst_stuff == '/lib': # On Windows, Qt dlls are inside lib when in source, but bin when installed
+        dst_stuff = '/bin'
+
+    dst_path = os.path.abspath(_install_dir + os.sep + dst_stuff) # sprinkle abspath to normalize slashes on windows
 
     if not os.path.exists(src_path):
         continue
 
     for src_file in listdir(src_path):
+        abs_src = src_path + os.sep + src_file
+        if os.path.isdir(abs_src):
+            continue
+
         print "Copying " + src_file + "..."
-        if not copy_file(src_path + os.sep + src_file, dst_path):
+        if not copy_file(abs_src, dst_path):
             exit(-1)
 
 print "Done!"
