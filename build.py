@@ -60,6 +60,7 @@ _readWerrorFlags = True
 _no_configure = False
 _no_notify = False
 _clean = True
+_no_debug_arg = "none" in os.getenv('BUILD_STUFF_BUILD_TYPE', '')
 _debug = "d" in os.getenv('BUILD_STUFF_BUILD_TYPE', '')
 _static = False
 _post_messages = []
@@ -106,9 +107,6 @@ if '--config' in sys.argv or '--conf' in sys.argv:
 
 if not _branch:
     _branch = "master"
-
-if _debug is None:
-    _debug = False
 
 if not _root_dir:
     print "DATA_DIR isn't set"
@@ -438,7 +436,7 @@ def parseCommandLine():
         _post_messages.append("Arg count is less than 3")
         printUsage()
 
-    global _repo, _bear, _pull, _clean, _debug, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only, _no_checkout, _fast_install
+    global _repo, _bear, _pull, _clean, _branch, _variantName, _no_configure, _docs, _configure_only, _clean_only,  _nuke, _static, _build_tests, _readWerrorFlags, _clazy, _no_patches, _all, _distcc, _print_only, _no_checkout, _fast_install
 
     arguments = sys.argv[1:] # exclude file name
 
@@ -784,10 +782,11 @@ def configure_command(repo):
     command = configure_env_command_for_repo(repo)
     command = remove_opts_from_configure(command)
 
-    if _debug:
-        command += " -debug "
-    else:
-        command += " -release "
+    if not _no_debug_arg:
+        if _debug:
+            command += " -debug "
+        else:
+            command += " -release "
 
     if _static:
         command += " -static"
