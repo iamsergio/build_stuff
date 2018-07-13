@@ -224,7 +224,7 @@ def printUsage():
         print "    " + c
 
     print "\nAvailable repos:"
-    plat_name = platform_name();
+    plat_name = platform_name()
     for r in _repos:
         if plat_name not in _repos[r].hide_from_hosts:
             repo = _repos[r]
@@ -444,18 +444,18 @@ def parseCommandLine():
 
     if not _repo:
         _post_messages.append("You must specify a valid repo name!\n")
-        printUsage();
+        printUsage()
 
     if "," in _repo:
         repos = _repo.split(",")
         for r in repos:
             if r not in _repos:
                 _post_messages.append("Invalid repo: " + r)
-                printUsage();
+                printUsage()
     else:
         if _repo not in _repos and _repo not in _repo_groups:
             _post_messages.append("Invalid repo: " + _repo)
-            printUsage();
+            printUsage()
 
     _no_patches = "--no-patches" in sys.argv
     _clazy = "--clazy" in sys.argv
@@ -535,7 +535,7 @@ def build_dir(repo):
 
 def change_dir(directory):
     if os.getcwd() == directory:
-        return True;
+        return True
 
     command = "[" + os.getcwd() + "] $] " + 'cd ' + directory
     log_command(command, False)
@@ -631,7 +631,6 @@ def real_branch(repo, fakeBranch):
     if env_name in os.environ:
         return os.environ[env_name]
 
-    r = _repos[repo]
     return fakeBranch
 
 def git_checkout(repo):
@@ -897,7 +896,6 @@ def make_install_command(repo):
 def build(repo):
     global _docs
     change_dir(build_dir(repo))
-    r = _repos[repo]
     make = make_tool(repo, _bear)
 
     if not run_command(make, True, "make-" + repo + ".log"):
