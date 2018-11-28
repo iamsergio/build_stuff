@@ -201,6 +201,10 @@ def configures():
 
     return configs
 
+def is_absolute_path(path):
+    abs = os.path.abspath(path)
+    return abs == path
+
 def fancy_group_string(g):
     repos = _repo_groups[g]
     text = "["
@@ -913,8 +917,20 @@ def build(repo):
 
     return True
 
+def find_script(script):
+    proc = subprocess.Popen("which qt_extra_configure_args.py", stdout = subprocess.PIPE)
+    line = proc.stdout
+
+    result = ''
+    for line in proc.stdout:
+        result = line.strip();
+        return result;
+
+    return line
+
 def parse_qt_extra_args_helper():
-    proc = subprocess.Popen("qt_extra_configure_args.py", stdout = subprocess.PIPE)
+    script = find_script("qt_extra_configure_args.py")
+    proc = subprocess.Popen("python2 " + script, stdout = subprocess.PIPE)
 
     global _extra_config_opts, _remove_config_opts
     i = 0
@@ -980,8 +996,8 @@ os.environ['VERBOSE'] = '1'
 os.environ['CONTAINER_STATS_DISABLED'] = '1'
 
 # not working on Windows for some reason
-if platform.system() != "Windows":
-    parse_qt_extra_args_helper()
+#if platform.system() != "Windows":
+parse_qt_extra_args_helper()
 
 _tried_to_build = True
 for r in repos:
