@@ -193,6 +193,9 @@ def platform_name():
         _post_messages.append("Unknown platform " + plat)
         sys.exit(-1)
 
+def isWindows():
+    return platform_name() == 'windows'
+
 def configures():
     configs = []
     for c in _kits:
@@ -929,8 +932,13 @@ def find_script(script):
     return line
 
 def parse_qt_extra_args_helper():
-    script = find_script("qt_extra_configure_args.py")
-    proc = subprocess.Popen("python2 " + script, stdout = subprocess.PIPE)
+
+    if isWindows():
+        script = 'python2 ' + find_script("qt_extra_configure_args.py")
+    else:
+        script = "qt_extra_configure_args.py"
+
+    proc = subprocess.Popen(script, stdout = subprocess.PIPE)
 
     global _extra_config_opts, _remove_config_opts
     i = 0
